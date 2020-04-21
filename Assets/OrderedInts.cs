@@ -4,7 +4,13 @@ using UnityEngine;
 
 public class OrderedInts : MonoBehaviour
 {
+	//	handle broken up packets
+	List<byte> PendingData = new List<byte>();
 	ushort LastPacketNumber = 0;
+	public bool FlushOnMainThread = false;
+	[Range(1, 10000)]
+	public int MaxNumbersPerFrame = 1000;
+	public int MaxBytesPerFrame { get { return MaxNumbersPerFrame * sizeof(ushort); } }
 
 	void OnNumber(ushort NextNumber)
 	{
@@ -16,15 +22,21 @@ public class OrderedInts : MonoBehaviour
 		LastPacketNumber = NextNumber;
 	}
 
-	public void OnPacket(byte[] Data)
+	void FlushData()
 	{
-		var Alignment = Data.Length % sizeof(ushort);
-		if ( Alignment != 0 )
+		//	for speed, pop the array
+		byte[] Data;
+		lock (PendingData)
 		{
-			Debug.LogWarning("Alignment of incoming data x" + Data.Length + " is misaligned...");
+			var DataLength = PendingData.Count - (PendingData.Count % 2);
+			DataLength = Mathf.Min(MaxBytesPerFrame, DataLength);
+			Debug.Log("Flushing " + DataLength + "bytes");
+			Data = new byte[DataLength];
+			PendingData.CopyTo(0,Data,0,Data.Length);
+			PendingData.RemoveRange(0, Data.Length);
 		}
 
-		for (var i = 0; i < Data.Length;	i+=2)
+		for (var i = 0; i < Data.Length; i += 2)
 		{
 			var a = Data[i + 0];
 			var b = Data[i + 1];
@@ -32,6 +44,23 @@ public class OrderedInts : MonoBehaviour
 			var s = (ushort)n;
 			OnNumber(s);
 		}
+	}
+
+	public void OnPacket(byte[] Data)
+	{
+		lock (PendingData)
+		{
+			PendingData.AddRange(Data);
+		}
+
+		if (!FlushOnMainThread)
+			FlushData();
+	}
+
+	void Update()
+	{
+		if (FlushOnMainThread)
+			FlushData();
 	}
 
 }
