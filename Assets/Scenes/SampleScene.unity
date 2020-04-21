@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44659364, g: 0.4964301, b: 0.5748256, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -346,7 +346,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  MaxJobsPerFrame: 2
+  MaxJobsPerFrame: 68
+  MaxPacketsPerFrame: 10
+  UseAsyncServer: 1
   VerboseDebug: 0
   Ports: d2040000
   RetryTimeSecs: 5
@@ -393,6 +395,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ef3de0f484584dabb4b17cb515d2216, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  FlushOnMainThread: 0
+  MaxNumbersPerFrame: 1000
 --- !u!4 &1859660823
 Transform:
   m_ObjectHideFlags: 0
